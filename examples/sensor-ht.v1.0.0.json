@@ -1,0 +1,32 @@
+{
+  "device_type": "sensor-ht",
+  "version": "1.0.0",
+  "description": "温湿度传感器示例：地址 + 功能码 + 4bit 模式枚举 + 4bit 保留 + 模式分支 + CRC16/MODBUS 校验",
+  "definition": {
+    "endian": "big",
+    "fields": [
+      {"name": "address", "type": "uint", "bits": 8},
+      {"name": "function", "type": "fixed", "bits": 8, "value": 3},
+      {"name": "mode", "type": "enum", "bits": 4,
+       "values": {"0": "poll", "1": "event"}},
+      {"name": "reserved", "type": "padding", "bits": 4},
+      {"name": "payload", "type": "switch", "selector": "mode",
+       "cases": [
+         {"name": "poll_request", "match": 0,
+          "fields": [
+            {"name": "register", "type": "uint", "bits": 16},
+            {"name": "count", "type": "uint", "bits": 8}
+          ]},
+         {"name": "event_report", "match": 1,
+          "fields": [
+            {"name": "status", "type": "enum", "bits": 8,
+             "values": {"0": "ok", "1": "alarm"}},
+            {"name": "battery_percent", "type": "uint", "bits": 8},
+            {"name": "temperature", "type": "int", "bits": 16, "endian": "little"}
+          ]}
+       ]},
+      {"name": "crc", "type": "checksum", "bits": 16,
+       "algorithm": "crc16/modbus", "endian": "little", "cover": "before"}
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+services:
+  parser-api:
+    build: .
+    image: industrial-binary-parser:latest
+    container_name: industrial-binary-parser
+    ports:
+      - "8080:8080"
+    environment:
+      # SQLite 数据库文件位置（容器内路径，挂载到命名卷持久化）
+      DB_PATH: /data/parser.db
+      PORT: "8080"
+    volumes:
+      - parser-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/health').status==200 else 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  parser-data:
